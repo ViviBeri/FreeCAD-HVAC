@@ -6,13 +6,12 @@ properties the new type doesn't declare, while Diameter/Width/Height stay
 type -- see the comment in Segment.py's applyTypeSchema).
 """
 
+import FreeCAD
 import conftest  # noqa: F401 -- installs FreeCAD/FreeCADGui/Part/PySide stubs
 
-import FreeCAD
-
 from freecad.HVAC.core import Segment as segment_mod
-from freecad.HVAC.library.Library import HVACPropertyDef
 from freecad.HVAC.library import geometry_result as geometry_result_mod
+from freecad.HVAC.library.Library import HVACPropertyDef
 
 
 class FakeSegmentObj:
