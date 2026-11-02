@@ -482,7 +482,18 @@ class DuctSegment:
         lp = float(edge.LastParameter)
 
         if raw_length <= 1e-9:
-            return raw_length, 0.0, 0.0, fp, lp, fp, lp
+            # Keep the same 11-value contract as the normal path. A zero-length
+            # FreeCAD edge is still a valid edge object and callers unpack all
+            # geometry outputs unconditionally.
+            try:
+                point = edge.valueAt(fp)
+            except Exception:
+                point = FreeCAD.Vector(0.0, 0.0, 0.0)
+            zero_direction = FreeCAD.Vector(0.0, 0.0, 0.0)
+            return (
+                0.0, 0.0, fp, lp, fp, lp,
+                point, point, zero_direction, zero_direction, 0.0,
+            )
 
         ts = max(0.0, float(trim_start or 0.0))
         te = max(0.0, float(trim_end or 0.0))
@@ -507,6 +518,16 @@ class DuctSegment:
             r2 = te / raw_length if raw_length > 1e-12 else 0.0
             p1 = fp + (lp - fp) * r1
             p2 = lp - (lp - fp) * r2
+            # The fallback above only estimates curve parameters. Resolve the
+            # corresponding points as well; tangent fallback below depends on
+            # them and must not reference uninitialized locals.
+            try:
+                eff_sp = edge.valueAt(p1)
+                eff_ep = edge.valueAt(p2)
+            except Exception:
+                raise ValueError(
+                    "Unable to resolve trimmed edge points from curve parameters"
+                )
             
         # Get edge directions
         try:
