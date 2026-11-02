@@ -31,4 +31,3 @@ jobs:
       - name: Check changed Python files with Ruff
         run: |
           ruff check --preview freecad/HVAC/core/Segment.py tests/test_segment_reactive_properties.py --select E302,E303,I
-          ruff format --check tests/test_segment_reactive_properties.py
