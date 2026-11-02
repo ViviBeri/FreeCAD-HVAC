@@ -7,7 +7,7 @@ type -- see the comment in Segment.py's applyTypeSchema).
 """
 
 import FreeCAD
-import conftest  # noqa: F401 -- installs FreeCAD/FreeCADGui/Part/PySide stubs
+import conftest  # noqa: F401, I001 -- installs FreeCAD/FreeCADGui/Part/PySide stubs
 
 from freecad.HVAC.core import Segment as segment_mod
 from freecad.HVAC.library import geometry_result as geometry_result_mod
