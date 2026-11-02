@@ -23,17 +23,16 @@
 
 """This module implements HVAC duct description classes."""
 import traceback
-import FreeCAD, Part
+
+import FreeCAD
 import FreeCADGui as Gui
-from PySide import QtWidgets, QtCore
+import Part
+from PySide import QtCore, QtWidgets
 from PySide.QtCore import QT_TRANSLATE_NOOP
 translate = FreeCAD.Qt.translate
 
 from ..utils import hvaclib
-from . import _type_schema
-from . import _construction_schema
-from . import _geometry_apply
-from . import _component_appearance
+from . import _component_appearance, _construction_schema, _geometry_apply, _type_schema
 from . import Construction as _construction
 
 
