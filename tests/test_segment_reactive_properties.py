@@ -1,3 +1,4 @@
+# ruff: noqa: I001 -- pytest loads conftest before test imports; keep this module's stub import ordering intact.
 """
 Focused tests for DuctSegment.applyTypeSchema's stale-property cleanup:
 switching TypeId to a model with a different property schema must drop
