@@ -29,11 +29,12 @@ import FreeCADGui as Gui
 import Part
 from PySide import QtCore, QtWidgets
 from PySide.QtCore import QT_TRANSLATE_NOOP
+
 translate = FreeCAD.Qt.translate
 
 from ..utils import hvaclib
-from . import _component_appearance, _construction_schema, _geometry_apply, _type_schema
 from . import Construction as _construction
+from . import _component_appearance, _construction_schema, _geometry_apply, _type_schema
 
 
 class DuctSegment:
