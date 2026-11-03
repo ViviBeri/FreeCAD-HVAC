@@ -1,3 +1,4 @@
+# ruff: noqa: I001 -- pytest loads conftest before test imports; keep this module's stub import ordering intact.
 """
 Focused tests for DuctSegment.applyTypeSchema's stale-property cleanup:
 switching TypeId to a model with a different property schema must drop
@@ -6,13 +7,12 @@ properties the new type doesn't declare, while Diameter/Width/Height stay
 type -- see the comment in Segment.py's applyTypeSchema).
 """
 
-import conftest  # noqa: F401 -- installs FreeCAD/FreeCADGui/Part/PySide stubs
-
 import FreeCAD
+import conftest  # noqa: F401, I001 -- installs FreeCAD/FreeCADGui/Part/PySide stubs
 
 from freecad.HVAC.core import Segment as segment_mod
-from freecad.HVAC.library.Library import HVACPropertyDef
 from freecad.HVAC.library import geometry_result as geometry_result_mod
+from freecad.HVAC.library.Library import HVACPropertyDef
 
 
 class FakeSegmentObj:
@@ -279,3 +279,56 @@ def test_execute_folds_attachment_offset_into_effective_points_without_a_source_
     assert obj.EffectiveEndPoint == expected_end
     assert captured["start_point"] == expected_start
     assert captured["end_point"] == expected_end
+
+
+class _FakeTrimEdge:
+    def __init__(self, length=100.0, fail_parameter_lookup=False, fail_tangents=False):
+        self.Length = length
+        self.FirstParameter = 0.0
+        self.LastParameter = 1.0
+        self.fail_parameter_lookup = fail_parameter_lookup
+        self.fail_tangents = fail_tangents
+
+    def getParameterByLength(self, distance):
+        if self.fail_parameter_lookup:
+            raise RuntimeError("curve parameter lookup unavailable")
+        return distance / self.Length
+
+    def valueAt(self, parameter):
+        return FreeCAD.Vector(parameter * self.Length, 0.0, 0.0)
+
+    def tangentAt(self, parameter):
+        if self.fail_tangents:
+            raise RuntimeError("curve tangent unavailable")
+        return FreeCAD.Vector(1.0, 0.0, 0.0)
+
+
+def test_compute_edge_trim_data_zero_length_edge_keeps_full_return_contract():
+    ds = segment_mod.DuctSegment.__new__(segment_mod.DuctSegment)
+
+    result = ds.computeEdgeTrimData(_FakeTrimEdge(length=0.0), 10.0, 10.0)
+
+    assert len(result) == 11
+    ts, te, fp, lp, p1, p2, start, end, start_dir, end_dir, length = result
+    assert (ts, te, fp, lp, p1, p2, length) == (0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0)
+    assert start == end
+    assert start_dir.Length == 0.0
+    assert end_dir.Length == 0.0
+
+
+def test_compute_edge_trim_data_fallback_resolves_points_before_tangent_fallback():
+    ds = segment_mod.DuctSegment.__new__(segment_mod.DuctSegment)
+
+    result = ds.computeEdgeTrimData(
+        _FakeTrimEdge(fail_parameter_lookup=True, fail_tangents=True),
+        20.0,
+        30.0,
+    )
+
+    assert len(result) == 11
+    ts, te, _fp, _lp, p1, p2, start, end, start_dir, end_dir, length = result
+    assert (ts, te, p1, p2, length) == (20.0, 30.0, 0.2, 0.7, 50.0)
+    assert start == FreeCAD.Vector(20.0, 0.0, 0.0)
+    assert end == FreeCAD.Vector(70.0, 0.0, 0.0)
+    assert start_dir == FreeCAD.Vector(50.0, 0.0, 0.0)
+    assert end_dir == FreeCAD.Vector(50.0, 0.0, 0.0)
