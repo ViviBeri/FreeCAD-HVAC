@@ -23,7 +23,8 @@ jobs:
           python-version: "3.11"
 
       - name: Install pinned test tools from binary wheels only
-        run: python -m pip install --only-binary=:all: "pytest==9.2.0" "ruff==0.17.3"
+        run: |
+          python -m pip install --only-binary=:all: "pytest==9.2.0" "ruff==0.17.3"
 
       - name: Run segment trim regression tests
         run: python -m pytest -q tests/test_segment_reactive_properties.py -k "compute_edge_trim_data"
